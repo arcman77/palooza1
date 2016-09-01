@@ -1,10 +1,11 @@
 'use strict';
 
 window.constants = {
-	'one-day'    : 86400000,
-	'one-hour'   : this['one-day'] / 24,
-	'one-minute' : this['one-hour'] / 60,
-	'one-second' : this['one-minute'] / 60
+	'test': function(){console.log(this)},
+	'one-day'    : function(){ return 86400000;},
+	'one-hour'   : function(){ return this['one-day']() / 24;},
+	'one-minute' : function(){ return this['one-hour']() / 60;},
+	'one-second' : function(){ return this['one-minute']() / 60;}
 }
 
 var dataParser = ( function(){
@@ -12,7 +13,7 @@ var dataParser = ( function(){
 
 		getData: function(){
 
-			var data = this.data || this.filterData('action','h');
+			var data = this.data || this.filterData('action','h','ts');
 			return data;
 
 		},
@@ -45,6 +46,9 @@ var dataParser = ( function(){
 		identifySessions: function(){
 			var data = this.getData();
 			var userEvents = this.users || this.identifyUniqueUsers();
+			var userSessions = [];
+			var idCount = 0;
+
 			data.forEach( function( event ){
 				if( Array.isArray( userEvents[ event.h ] )){
 					userEvents[ event.h ].push( event );
@@ -53,7 +57,59 @@ var dataParser = ( function(){
 					userEvents[ event.h ] = [ event ];
 				}
 			});
-			console.log(userEvents)
+
+			for( var userId in userEvents ){
+				// console.log(userId)
+				userEvents[ userId ] = userEvents[ userId ].sort(function(a,b){
+					return a.ts - b.ts;
+				});
+				// console.log( userEvents[ userId ])
+			}
+
+			this.userEvents = userEvents;
+
+			var previousTS, currentEvent, sessionEvents, start;
+
+			for(var id in userEvents ){//loop through all users
+
+				previousTS = userEvents[ id ][0].ts;
+				start = previousTS;
+				sessionEvents = [];
+
+				for(var i in userEvents[ id ]){//loop through all events on a user
+					currentEvent = userEvents[ id ][i];
+					console.log(userEvents[id][i])
+					if( currentEvent.ts - previousTS < window.constants['one-hour']()){
+						sessionEvents.push( currentEvent );
+						previousTS = currentEvent.ts;
+					}
+					else{
+						 console.log('MORE', (currentEvent.ts - previousTS) /1000)
+						 console.log(currentEvent)
+						var sessionInfo = { 
+							events: sessionEvents,
+							duration: currentEvent.ts - start,
+							start: start,
+							stop: currentEvent.ts,
+							userId: id,
+							id: idCount
+						};
+
+						userSessions.push( sessionInfo );
+						idCount++;
+					  sessionEvents = [];
+						previousTS = currentEvent.ts;
+					}//end else
+
+				}//end inner for
+
+			}//end outer for
+
+			this.sessions = userSessions;
+			this.sessionsCount = userSessions.length;
+			// console.log(userSessions)
+			return userSessions;
+
 		},
 
 		identifyUniqueUsers: function(){
