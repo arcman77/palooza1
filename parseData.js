@@ -14,6 +14,11 @@ var dataParser = ( function(){
 		getData: function(){
 
 			var data = this.data || this.filterData('action','h','ts');
+			// data = data.map( function( event ){
+			// 	event.ts = event.ts*1000;
+			// 	return event;
+			// });
+
 			return data;
 
 		},
@@ -78,21 +83,23 @@ var dataParser = ( function(){
 
 				for(var i in userEvents[ id ]){//loop through all events on a user
 					currentEvent = userEvents[ id ][i];
-					console.log(userEvents[id][i])
-					if( currentEvent.ts - previousTS < window.constants['one-hour']()){
+					var deltaT = currentEvent.ts - previousTS;
+					if(  deltaT <  window.constants['one-hour']() ){
 						sessionEvents.push( currentEvent );
 						previousTS = currentEvent.ts;
 					}
-					else{
-						 console.log('MORE', (currentEvent.ts - previousTS) /1000)
-						 console.log(currentEvent)
+					else if( window.constants['one-hour']() <  deltaT && deltaT < window.constants['one-hour']()*5 ){        											//
+						 console.log('MORE minutes:', (currentEvent.ts - previousTS)/(1000*60)  )
+						 //console.log(currentEvent)
 						var sessionInfo = { 
 							events: sessionEvents,
 							duration: currentEvent.ts - start,
 							start: start,
 							stop: currentEvent.ts,
 							userId: id,
-							id: idCount
+							id: idCount,
+							dateStart: new Date(start),
+							dateStop : new Date(stop)
 						};
 
 						userSessions.push( sessionInfo );

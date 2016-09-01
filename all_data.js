@@ -2711,3 +2711,9 @@ var data = [ {"ip":"208.72.199.1","ts":1465505975,"ua":"", "sequenceID":4,"ssb":
 {"ip":"38.99.42.130","ts":1472509428,"ua":"", "sequenceID":0,"ssb":2944438,"eventName":"next-dev","h":"c7d30b221dd94f3fbef51a56b546c183","ostype":"osx","osv":"darwin","cl":"Next","l":"en_US","v":"0.1.8000","action":"media.play.now","category":"media","label":"now","responseChannel":"torrentview-event-response-4"},
 {"ip":"38.99.42.130","ts":1472516905,"ua":"", "sequenceID":0,"ssb":1222732,"eventName":"next-dev","h":"ad99eca5772e462a97dacd681d188bce","ostype":"windows","osv":"win32","cl":"Next","l":"en_US","v":"0.1.8000","action":"media.play.now","category":"media","label":"now","responseChannel":"torrentview-event-response-0"},
 {"ip":"38.99.42.130","ts":1472517016,"ua":"", "sequenceID":0,"ssb":1222843,"eventName":"next-dev","h":"ad99eca5772e462a97dacd681d188bce","ostype":"windows","osv":"win32","cl":"Next","l":"en_US","v":"0.1.8000","action":"media.toggle_fullscreen.true","category":"media","label":"true","responseChannel":"torrentview-event-response-1"} ];
+
+data = data.map( function( event ){
+				event.ts = event.ts*1000;
+				event.date = new Date(event.ts);
+				return event;
+			});
